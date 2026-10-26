@@ -2,7 +2,7 @@
 
 Adapt one design to every social format at once: Instagram Post / Portrait / Story-Reels, TikTok, YouTube Thumbnail / Shorts, Facebook Post / Cover, LinkedIn Post / Cover, X Post / Header, Pinterest Pin, WhatsApp Status and any custom size. Smart crop with a shared focal point, fit with blurred or solid background, stretch, padding, corner radius and caption overlay. Everything renders on `<canvas>` in the user's browser; nothing is uploaded.
 
-**Live:** https://__SITE_URL__/ (placeholder – replaced after deploy)
+**Live:** https://creativeresize-tool.vercel.app/ (placeholder – replaced after deploy)
 
 ## Features
 
@@ -53,7 +53,7 @@ No build step. Open the printed URL.
 Deploy the folder as a static site on Vercel (`vercel --prod`). After the first deploy, replace the placeholder everywhere:
 
 ```bash
-sed -i 's/__SITE_URL__/your-app.vercel.app/g' index.html privacy.html terms.html robots.txt sitemap.xml config.js README.md
+sed -i 's/creativeresize-tool.vercel.app/your-app.vercel.app/g' index.html privacy.html terms.html robots.txt sitemap.xml config.js README.md
 ```
 
 Then run `node _shared/apply-brand.js creative-resize` from the repo root to inject the shared header, hero, footer and lead card.
