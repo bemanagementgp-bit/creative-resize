@@ -247,6 +247,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 
 
 
+
 /* ===== Creative Resize – app styles ===== */
 /* stage: grid of previews instead of a single canvas */
 .studio-canvas.stage-grid{display:flex;flex-direction:column;gap:12px;align-items:stretch;justify-content:flex-start;padding:12px;min-height:min(62vh,640px)}
