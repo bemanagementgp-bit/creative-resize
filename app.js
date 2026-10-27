@@ -63,7 +63,7 @@
       else if (d && typeof d === 'object') { if (!v || typeof v !== 'object' || Array.isArray(v)) S[k] = {}; }
       else if (typeof v !== typeof d) S[k] = d;
     });
-    S.custom = S.custom.filter(c => c && typeof c.id === 'string' && Number.isFinite(c.w) && Number.isFinite(c.h))
+    S.custom = S.custom.filter(c => c && typeof c.id === 'string' && /^[\w-]{1,40}$/.test(c.id) && Number.isFinite(c.w) && Number.isFinite(c.h)).slice(0, 200)
       .map(c => ({ id: c.id, w: clamp(Math.round(c.w), 16, 8192), h: clamp(Math.round(c.h), 16, 8192) }));
     S.sel = S.sel.filter((id, i, a) => typeof id === 'string' && fmtById(id) && a.indexOf(id) === i);
     if (!FILLS.includes(S.fill)) S.fill = 'cover';
@@ -73,6 +73,10 @@
     S.fx = clamp(S.fx, 0, 1); S.fy = clamp(S.fy, 0, 1);
     S.blur = clamp(Math.round(S.blur), 0, 80); S.pad = clamp(Math.round(S.pad), 0, 120); S.radius = clamp(Math.round(S.radius), 0, 120);
     S.capSize = clamp(Math.round(S.capSize), 16, 160); S.quality = clamp(Math.round(S.quality), 40, 100);
+    // restored strings are untrusted: colours must be hex, caption length capped
+    if (!/^#[0-9a-f]{6}$/i.test(S.solidColor)) S.solidColor = DEF.solidColor;
+    if (!/^#[0-9a-f]{6}$/i.test(S.capColor)) S.capColor = DEF.capColor;
+    S.caption = S.caption.slice(0, 500);
     Object.keys(S.ov).forEach(id => { const o = S.ov[id]; if (!fmtById(id) || !o || typeof o !== 'object') delete S.ov[id]; });
   })();
   const save = Studio.debounce(() => Studio.persist(STATE_KEY, S), 200);
@@ -414,7 +418,7 @@
       const h = document.createElement('div'); h.className = 'fmt-platform'; h.textContent = g.name; gd.appendChild(h);
       g.list.forEach(f => {
         const row = document.createElement('label'); row.className = 'fmt-row';
-        const txt = document.createElement('span'); txt.className = 't'; txt.innerHTML = `<span>${f.custom ? 'Custom size' : f.name}</span><small>${f.w} × ${f.h}</small>`;
+        const txt = document.createElement('span'); txt.className = 't'; txt.innerHTML = `<span>${f.custom ? 'Custom size' : esc(f.name)}</span><small>${esc(f.w)} × ${esc(f.h)}</small>`;
         const sw = document.createElement('span'); sw.className = 'switch';
         const inp = document.createElement('input'); inp.type = 'checkbox'; inp.dataset.id = f.id; inp.checked = S.sel.includes(f.id); inp.setAttribute('aria-label', labelFor(f) + ' ' + f.w + ' by ' + f.h);
         inp.addEventListener('change', () => { toggleFormat(f.id, inp.checked); });
@@ -462,7 +466,18 @@
   function syncCustomHint() { $('customHint').textContent = isPro() ? S.custom.length + ' custom size' + (S.custom.length === 1 ? '' : 's') + ' · unlimited with Pro' : 'Free: ' + FREE_CUSTOM + ' custom size · Pro: unlimited'; }
 
   // ---------- saved bundles ----------
-  function loadBundles() { try { const b = JSON.parse(localStorage.getItem(BUNDLES_KEY) || '[]'); return Array.isArray(b) ? b : []; } catch (e) { return []; } }
+  // Bundles come from localStorage (untrusted): safe parse + strict shape (ids, sizes within 16–8192).
+  function loadBundles() {
+    const b = Studio.safeParse(localStorage.getItem(BUNDLES_KEY) || '[]', []);
+    if (!Array.isArray(b)) return [];
+    const okId = id => typeof id === 'string' && /^[\w-]{1,40}$/.test(id);
+    return b.filter(x => x && typeof x === 'object').slice(0, 200).map(x => ({
+      name: String(x.name == null ? '' : x.name).slice(0, 80),
+      sel: Array.isArray(x.sel) ? x.sel.filter(okId).slice(0, 200) : [],
+      custom: Array.isArray(x.custom) ? x.custom.filter(c => c && okId(c.id) && Number.isFinite(c.w) && Number.isFinite(c.h)).slice(0, 200)
+        .map(c => ({ id: c.id, w: clamp(Math.round(c.w), 16, 8192), h: clamp(Math.round(c.h), 16, 8192) })) : []
+    }));
+  }
   function saveBundles(b) { try { localStorage.setItem(BUNDLES_KEY, JSON.stringify(b)); } catch (e) {} }
   function renderBundles() {
     const list = $('bundleList'), bs = loadBundles(); list.innerHTML = '';
@@ -491,7 +506,7 @@
     const bs = loadBundles();
     if (!isPro() && bs.length >= FREE_BUNDLES) { openPro('bundles'); return; }
     if (!S.sel.length) { toast('Select at least one format first'); return; }
-    const name = $('bundleName').value.trim() || ('Bundle ' + (bs.length + 1));
+    const name = $('bundleName').value.trim().slice(0, 80) || ('Bundle ' + (bs.length + 1));
     bs.push({ name, sel: S.sel.slice(), custom: S.custom.filter(c => S.sel.includes(c.id)) });
     saveBundles(bs); $('bundleName').value = ''; renderBundles(); toast('Bundle saved'); track('bundle_save', { count: S.sel.length });
   }
@@ -528,6 +543,7 @@
     const take = isPro() ? files.slice(0, MAX_SOURCES) : files.slice(0, 1);
     const loaded = [];
     for (const f of take) {
+      if (f.size > 100 * 1024 * 1024) { toast('Could not read ' + f.name); continue; } // size cap
       try { const img = await Studio.readImage(f); loaded.push(makeItem(img, f.name)); }
       catch (e) { toast('Could not read ' + f.name + (/heic|heif/i.test(f.name) ? ' (HEIC is not supported by browsers)' : '')); }
     }
@@ -551,7 +567,7 @@
     });
     syncCount(); renderFocal();
   }
-  function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+  function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
   function useSample() { items = []; current = 0; syncSource(); update(); track('sample', {}); }
 
   // ---------- init ----------
