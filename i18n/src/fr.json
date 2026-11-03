@@ -97,7 +97,7 @@
   "Fit + blurred background": "Ajuster + arrière-plan flouté",
   "Fit + blurred background keeps your whole design visible, scaled to fit inside the target size, and fills the empty space with a blurred, slightly darkened copy of the same image. It is the standard trick for turning a landscape design into a Story or a vertical poster into a YouTube thumbnail without cropping anything. You control the blur radius, padding and the corner radius of the inner image.": "Ajuster + arrière-plan flouté garde tout votre design visible, redimensionné pour tenir dans la taille cible, et remplit l'espace vide avec une copie floutée et légèrement assombrie de la même image. C'est l'astuce classique pour transformer un design paysage en Story ou une affiche verticale en miniature YouTube sans rien rogner. Vous réglez le rayon du flou, la marge et l'arrondi des coins de l'image intérieure.",
   "Fit + color": "Ajuster + couleur",
-  "Fit with blurred background, fit with solid or auto color, or stretch": "Ajuster avec arrière-plan flouté, ajuster avec couleur unie ou automatique, ou étirer",
+  "Fit with blurred background, fit with solid or auto color, fit with transparent background, or stretch": "Ajuster avec arrière-plan flouté, ajuster avec couleur unie ou automatique, ajuster avec arrière-plan transparent, ou étirer",
   "Focal point": "Point focal",
   "Focal point. Click or drag on the thumbnail, or use the arrow keys.": "Point focal. Cliquez ou faites glisser sur la miniature, ou utilisez les flèches du clavier.",
   "Format previews": "Aperçus des formats",
@@ -261,5 +261,12 @@
   "Quality": "Qualité",
   "Show": "Afficher",
   "Showing the": "Affichage de",
-  "Video": "Vidéo"
+  "Video": "Vidéo",
+  "Fit + transparent": "Ajuster + transparent",
+  "Transparent": "Transparent",
+  "Upscaled ×{0}": "Agrandie ×{0}",
+  "The image is enlarged for this format and may look soft. Use a larger original if you can.": "L'image est agrandie pour ce format et peut paraître floue. Utilisez un original plus grand si possible.",
+  "Saves as PNG": "Enregistré en PNG",
+  "JPG cannot store transparency, so transparent formats are saved as PNG.": "Le JPG ne gère pas la transparence : les formats transparents sont donc enregistrés en PNG.",
+  "This browser cannot encode WebP, so files are saved as PNG.": "Ce navigateur ne sait pas encoder le WebP : les fichiers sont donc enregistrés en PNG."
 }

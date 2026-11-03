@@ -97,7 +97,7 @@
   "Fit + blurred background": "Einpassen + weichgezeichneter Hintergrund",
   "Fit + blurred background keeps your whole design visible, scaled to fit inside the target size, and fills the empty space with a blurred, slightly darkened copy of the same image. It is the standard trick for turning a landscape design into a Story or a vertical poster into a YouTube thumbnail without cropping anything. You control the blur radius, padding and the corner radius of the inner image.": "Einpassen + weichgezeichneter Hintergrund hält dein ganzes Design sichtbar, skaliert es passend ins Zielformat und füllt den leeren Raum mit einer weichgezeichneten, leicht abgedunkelten Kopie desselben Bildes. Das ist der Standardtrick, um aus einem Querformat-Design eine Story oder aus einem Hochformat-Poster ein YouTube-Thumbnail zu machen, ohne etwas abzuschneiden. Du steuerst den Weichzeichner-Radius, den Innenabstand und den Eckenradius des inneren Bildes.",
   "Fit + color": "Einpassen + Farbe",
-  "Fit with blurred background, fit with solid or auto color, or stretch": "Einpassen mit weichgezeichnetem Hintergrund, mit einfarbiger oder automatischer Farbe, oder strecken",
+  "Fit with blurred background, fit with solid or auto color, fit with transparent background, or stretch": "Einpassen mit weichgezeichnetem Hintergrund, mit einfarbiger oder automatischer Farbe, mit transparentem Hintergrund, oder strecken",
   "Focal point": "Fokuspunkt",
   "Focal point. Click or drag on the thumbnail, or use the arrow keys.": "Fokuspunkt. Klicke oder zieh auf der Miniatur oder nutze die Pfeiltasten.",
   "Format previews": "Format-Vorschauen",
@@ -261,5 +261,12 @@
   "Quality": "Qualität",
   "Show": "Anzeigen",
   "Showing the": "Du siehst das",
-  "Video": "Video"
+  "Video": "Video",
+  "Fit + transparent": "Einpassen + transparent",
+  "Transparent": "Transparent",
+  "Upscaled ×{0}": "Hochskaliert ×{0}",
+  "The image is enlarged for this format and may look soft. Use a larger original if you can.": "Das Bild wird für dieses Format vergrößert und kann unscharf wirken. Nimm nach Möglichkeit ein größeres Original.",
+  "Saves as PNG": "Wird als PNG gespeichert",
+  "JPG cannot store transparency, so transparent formats are saved as PNG.": "JPG kann keine Transparenz speichern, daher werden transparente Formate als PNG gespeichert.",
+  "This browser cannot encode WebP, so files are saved as PNG.": "Dieser Browser kann kein WebP erzeugen, daher werden die Dateien als PNG gespeichert."
 }

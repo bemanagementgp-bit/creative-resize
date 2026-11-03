@@ -33,8 +33,9 @@
     covers: ['fb-cover', 'li-cover', 'x-header'],
     everything: FORMATS.map(f => f.id)
   };
-  const FILLS = ['cover', 'blur', 'solid', 'stretch'];
+  const FILLS = ['cover', 'blur', 'solid', 'transparent', 'stretch'];
   const TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+  const WEBP_OK = (() => { try { const c = document.createElement('canvas'); c.width = c.height = 2; return c.toDataURL('image/webp').indexOf('data:image/webp') === 0; } catch (e) { return false; } })();
 
   function fmtById(id) {
     const f = FORMATS.find(x => x.id === id); if (f) return f;
@@ -162,6 +163,14 @@
     const cw = dw / r, ch = dh / r;
     return { sx: clamp(st.fx * sw - cw / 2, 0, Math.max(0, sw - cw)), sy: clamp(st.fy * sh - ch / 2, 0, Math.max(0, sh - ch)), sw: cw, sh: ch, r };
   }
+  // How much the source is enlarged in this format's output (1 = native pixels, >1 = upscaled), incl. zoom and 2x export
+  function upscaleFor(f, item) {
+    const st = settingsFor(f.id), pad = Math.max(0, padFor(f)), iw = f.w - 2 * pad, ih = f.h - 2 * pad;
+    const r = st.fill === 'cover' ? coverRect(item.w, item.h, iw, ih, st).r
+      : st.fill === 'stretch' ? Math.max(iw / item.w, ih / item.h)
+      : Math.min(iw / item.w, ih / item.h) * st.zoom;
+    return r * exportScale();
+  }
 
   // ---------- drawing (design coordinates W×H; caller scales ctx) ----------
   function drawFormat(ctx, W, H, fmt, item, opts) {
@@ -169,13 +178,13 @@
     const st = settingsFor(fmt.id), pad = Math.max(0, padFor(fmt));
     const iw = W - 2 * pad, ih = H - 2 * pad;
     const bg = S.solidAuto ? item.dom : S.solidColor;
-    const fitMode = st.fill === 'blur' || st.fill === 'solid';
-    // background
+    const fitMode = st.fill === 'blur' || st.fill === 'solid' || st.fill === 'transparent';
+    // background ("transparent" leaves the letterbox / padding empty: alpha in PNG and WebP)
     if (st.fill === 'blur') {
       const b = blurredSource(item), cv = Studio.cover(b.width, b.height, W, H);
       ctx.drawImage(b, cv.sx, cv.sy, cv.sw, cv.sh, 0, 0, W, H);
       ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(0, 0, W, H);
-    } else if (st.fill === 'solid' || pad > 0) { ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H); }
+    } else if (st.fill === 'solid' || (pad > 0 && st.fill !== 'transparent')) { ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H); }
     // image
     ctx.save();
     const innerR = (!fitMode && pad > 0) ? S.radius : 0;
@@ -245,7 +254,7 @@
       let n = nodes.get(f.id);
       if (!n) {
         n = document.createElement('div'); n.className = 'pv'; n.dataset.id = f.id; n.setAttribute('role', 'button'); n.tabIndex = 0;
-        n.innerHTML = '<div class="cv"><canvas></canvas></div><div class="lab"><b></b><span></span></div>';
+        n.innerHTML = '<div class="cv"><canvas></canvas><span class="pv-badges"></span></div><div class="lab"><b></b><span></span></div>';
         n.addEventListener('click', () => openFocus(f.id));
         n.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); openFocus(f.id); } });
         nodes.set(f.id, n);
@@ -260,7 +269,25 @@
   }
   function syncEdited() { nodes.forEach((n, id) => n.classList.toggle('edited', hasOverride(id))); }
   function renderAll() {
-    nodes.forEach((n, id) => { const f = fmtById(id); if (f) renderPreview(n.querySelector('canvas'), f, PREVIEW_MAX, { safe: S.safe }); });
+    nodes.forEach((n, id) => {
+      const f = fmtById(id); if (!f) return;
+      renderPreview(n.querySelector('canvas'), f, PREVIEW_MAX, { safe: S.safe });
+      n.classList.toggle('is-transparent', settingsFor(id).fill === 'transparent');
+      syncBadges(n.querySelector('.pv-badges'), f);
+    });
+  }
+  // Notices on a preview: "Upscaled ×N" when the source is enlarged, "Saves as PNG" when the export type cannot be used
+  function syncBadges(box, f) {
+    const up = upscaleFor(f, src()), list = [];
+    if (up > 1.05) list.push({ t: 'Upscaled ×' + (Math.round(up * 10) / 10), warn: true, tip: 'The image is enlarged for this format and may look soft. Use a larger original if you can.' });
+    if (typeFor(f.id) !== S.type) list.push({ t: 'Saves as PNG' });
+    const key = list.map(b => b.t).join('|'); if (box.dataset.v === key) return; box.dataset.v = key;
+    box.textContent = '';
+    list.forEach(b => {
+      const s = document.createElement('span'); s.className = 'pv-badge' + (b.warn ? ' warn' : ''); s.textContent = b.t;
+      if (b.tip) s.title = b.tip;
+      box.appendChild(s);
+    });
   }
   function syncCount() {
     const n = S.sel.length, it = src();
@@ -271,7 +298,7 @@
   }
 
   // ---------- render loop ----------
-  const scheduleRender = Studio.raf(() => { renderAll(); renderFocus(); renderFocal(); });
+  const scheduleRender = Studio.raf(() => { renderAll(); renderFocus(); renderFocal(); syncTypeUI(); });
   function update() { save(); scheduleRender(); }
 
   // ---------- focal point ----------
@@ -323,6 +350,7 @@
     const cv = $('focusCanvas');
     renderPreview(cv, f, FOCUS_MAX, { safe: S.safe });
     const ctx = cv.getContext('2d'); ctx.setTransform(1, 0, 0, 1, 0, 0); Studio.watermark(ctx, cv.width, cv.height);
+    syncBadges($('focusBadges'), f);
   }
   function setOverride(id, patch) {
     const o = Object.assign({}, S.ov[id] || {}, patch);
@@ -366,16 +394,22 @@
   }
 
   // ---------- export ----------
-  const ext = () => S.type === 'image/jpeg' ? '.jpg' : S.type === 'image/webp' ? '.webp' : '.png';
+  const extFor = t => t === 'image/jpeg' ? '.jpg' : t === 'image/webp' ? '.webp' : '.png';
+  function exportScale() { return S.scale === 2 && isPro() ? 2 : 1; }
+  // JPG cannot hold alpha: a transparent fill is saved as PNG instead; WebP keeps alpha, or falls back to PNG where the browser cannot encode it
+  function typeFor(id) {
+    if (S.type === 'image/webp') return WEBP_OK ? S.type : 'image/png';
+    return S.type === 'image/jpeg' && settingsFor(id).fill === 'transparent' ? 'image/png' : S.type;
+  }
   function fileName(f, it) {
     const base = Studio.safeName(f.custom ? 'custom' : f.platform + '-' + f.name) + '-' + f.w + 'x' + f.h;
     const srcName = items.length > 1 ? '-' + Studio.safeName((it.name || 'image').replace(/\.[a-z0-9]+$/i, '')) : '';
     return 'creative-resize-' + base + srcName;
   }
   function exportFormat(f, it, download) {
-    const scale = S.scale === 2 && isPro() ? 2 : 1;
-    const quality = S.type === 'image/png' ? undefined : S.quality / 100;
-    return Studio.exportPNG((ctx, w, h) => drawFormat(ctx, w, h, f, it, {}), f.w, f.h, { scale, name: fileName(f, it), type: S.type, quality, download: download !== false });
+    const scale = exportScale(), type = typeFor(f.id);
+    const quality = type === 'image/png' ? undefined : S.quality / 100;
+    return Studio.exportPNG((ctx, w, h) => drawFormat(ctx, w, h, f, it, {}), f.w, f.h, { scale, name: fileName(f, it), type, quality, download: download !== false });
   }
   const wait = ms => new Promise(r => setTimeout(r, ms));
   let busy = false;
@@ -390,7 +424,8 @@
       try {
         for (const it of sources) for (const f of fmts) {
           const blob = await exportFormat(f, it, false);
-          let name = fileName(f, it) + ext(); if (seen.has(name)) name = name.replace(ext(), '-' + (files.length + 1) + ext()); seen.add(name);
+          const x = extFor(typeFor(f.id));
+          let name = fileName(f, it) + x; if (seen.has(name)) name = name.replace(x, '-' + (files.length + 1) + x); seen.add(name);
           files.push({ name, blob });
         }
         await Studio.zip(files, 'creative-resize-' + Studio.safeName((src().name || 'sample').replace(/\.[a-z0-9]+$/i, '')));
@@ -519,12 +554,19 @@
   }
   function syncFillUI() {
     $('blurRow').classList.toggle('hidden', S.fill !== 'blur');
-    $('solidRow').classList.toggle('hidden', !(S.fill === 'solid' || S.pad > 0));
-    $('radiusRow').classList.toggle('hidden', !(S.fill === 'blur' || S.fill === 'solid' || S.pad > 0));
+    $('solidRow').classList.toggle('hidden', !(S.fill === 'solid' || (S.pad > 0 && S.fill !== 'transparent')));
+    $('radiusRow').classList.toggle('hidden', !(S.fill === 'blur' || S.fill === 'solid' || S.fill === 'transparent' || S.pad > 0));
     $('solidColor').disabled = S.solidAuto;
     $('focalWrap').classList.toggle('dim', S.fill !== 'cover' && !Object.values(S.ov).some(o => o.fill === 'cover'));
   }
-  function syncTypeUI() { $('qualityRow').classList.toggle('hidden', S.type === 'image/png'); }
+  function syncTypeUI() {
+    const webpNo = S.type === 'image/webp' && !WEBP_OK;
+    $('qualityRow').classList.toggle('hidden', S.type === 'image/png' || webpNo);
+    const msg = webpNo ? 'This browser cannot encode WebP, so files are saved as PNG.'
+      : S.type === 'image/jpeg' && selected().some(f => settingsFor(f.id).fill === 'transparent') ? 'JPG cannot store transparency, so transparent formats are saved as PNG.' : '';
+    const h = $('typeHint'); if (h.dataset.v !== msg) { h.dataset.v = msg; h.textContent = msg; }
+    h.classList.toggle('hidden', !msg);
+  }
   function syncAll() {
     segs.fill.set(S.fill);
     ['blur', 'pad', 'radius', 'capSize', 'quality'].forEach(k => { $(k).value = S[k]; $(k).dispatchEvent(new Event('input', { bubbles: false })); });
@@ -601,11 +643,11 @@
     $('capColor').addEventListener('input', () => { S.capColor = $('capColor').value; update(); });
 
     // export options
-    $('typeSel').addEventListener('change', () => { S.type = $('typeSel').value; syncTypeUI(); save(); });
+    $('typeSel').addEventListener('change', () => { S.type = $('typeSel').value; syncTypeUI(); update(); });
     range('quality', 'quality', v => v + '%');
     segs.scale = Studio.seg($('scaleSeg'), v => {
       if (v === '2' && !Studio.gate('hires')) { segs.scale.set('1'); S.scale = 1; return; }
-      S.scale = Number(v); save(); track('export_scale', { scale: S.scale });
+      S.scale = Number(v); update(); track('export_scale', { scale: S.scale });
     });
     $('dlAll').addEventListener('click', downloadAll);
     $('resetBtn').addEventListener('click', () => {

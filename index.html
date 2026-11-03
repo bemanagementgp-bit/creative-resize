@@ -42,7 +42,7 @@
     "featureList": [
       "14 social media formats with 2026 pixel sizes plus custom sizes",
       "Smart crop with a draggable focal point shared by every format",
-      "Fit with blurred background, fit with solid or auto color, or stretch",
+      "Fit with blurred background, fit with solid or auto color, fit with transparent background, or stretch",
       "Padding, corner radius and caption overlay applied to every format",
       "Per-format pan, zoom and fill override",
       "PNG, JPG or WebP export, batch download, 100% private – nothing is uploaded"
@@ -186,6 +186,7 @@
         <div class="ctl quality-ctl" id="qualityRow"><label for="quality">Quality</label><input type="range" id="quality" min="40" max="100" step="1" value="90"><span class="v" id="qualityV">90%</span></div>
         <button type="button" class="btn btn-ghost" id="resetBtn">Reset</button>
       </div>
+      <p class="hint type-hint hidden" id="typeHint" role="status"></p>
       <div class="ad-slot horizontal" data-slot="below-tool"></div>
     </div>
 
@@ -242,6 +243,7 @@
             <button type="button" data-value="cover">Smart crop</button>
             <button type="button" data-value="blur">Fit + blur</button>
             <button type="button" data-value="solid">Fit + color</button>
+            <button type="button" data-value="transparent">Fit + transparent</button>
             <button type="button" data-value="stretch">Stretch</button>
           </div>
           <div class="ctl" id="blurRow" style="margin-top:12px"><label for="blur">Blur</label><input type="range" id="blur" min="0" max="80" step="1" value="30"><span class="v" id="blurV">30px</span></div>
@@ -401,7 +403,7 @@
 <div class="modal focus-modal" id="focusModal" role="dialog" aria-modal="true" aria-labelledby="focusTitle">
   <div class="card focus-card">
     <button class="btn btn-sm close" id="fClose" aria-label="Close focus view">✕</button>
-    <div class="focus-head"><h3 id="focusTitle">Format</h3><span class="focus-size" id="focusSize"></span></div>
+    <div class="focus-head"><h3 id="focusTitle">Format</h3><span class="focus-size" id="focusSize"></span><span class="focus-badges" id="focusBadges"></span></div>
     <div class="focus-body">
       <div class="focus-stage"><canvas id="focusCanvas" aria-label="Enlarged preview. Drag to pan, scroll to zoom."></canvas></div>
       <div class="focus-ctl">
@@ -411,6 +413,7 @@
           <button type="button" data-value="cover">Crop</button>
           <button type="button" data-value="blur">Blur</button>
           <button type="button" data-value="solid">Color</button>
+          <button type="button" data-value="transparent">Transparent</button>
           <button type="button" data-value="stretch">Stretch</button>
         </div>
         <div class="ctl" style="margin-top:12px"><label for="fZoom">Zoom</label><input type="range" id="fZoom" min="100" max="300" step="1" value="100"><span class="v" id="fZoomV">100%</span></div>

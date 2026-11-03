@@ -1,6 +1,6 @@
 # Creative Resize – Free Social Media Image Resizer
 
-Adapt one design to every social format at once: Instagram Post / Portrait / Story-Reels, TikTok, YouTube Thumbnail / Shorts, Facebook Post / Cover, LinkedIn Post / Cover, X Post / Header, Pinterest Pin, WhatsApp Status and any custom size. Smart crop with a shared focal point, fit with blurred or solid background, stretch, padding, corner radius and caption overlay. Everything renders on `<canvas>` in the user's browser; nothing is uploaded.
+Adapt one design to every social format at once: Instagram Post / Portrait / Story-Reels, TikTok, YouTube Thumbnail / Shorts, Facebook Post / Cover, LinkedIn Post / Cover, X Post / Header, Pinterest Pin, WhatsApp Status and any custom size. Smart crop with a shared focal point, fit with blurred, solid or transparent background, stretch, padding, corner radius and caption overlay. Everything renders on `<canvas>` in the user's browser; nothing is uploaded.
 
 **Live:** https://creativeresize-tool.vercel.app/ (placeholder – replaced after deploy)
 
@@ -9,7 +9,9 @@ Adapt one design to every social format at once: Instagram Post / Portrait / Sto
 **Free**
 - Drop / pick / paste one image (PNG, JPG, WebP). A built-in sample poster is shown until an image is loaded.
 - 14 formats grouped by platform (2026 sizes) with switch rows, "Select all / None", preset bundle chips (Instagram set, Video platforms, Covers, Everything), 1 custom size
-- Fill modes: Smart crop (cover centered on a draggable focal point), Fit + blurred background (blur radius slider), Fit + solid color (picker or auto dominant color), Stretch
+- Fill modes: Smart crop (cover centered on a draggable focal point), Fit + blurred background (blur radius slider), Fit + solid color (picker or auto dominant color), Fit + transparent (letterbox and padding left as alpha), Stretch
+- Transparent output: PNG and WebP keep the alpha channel; a transparent format exported as JPG is saved as PNG instead (notice under the export bar + "Saves as PNG" badge). Where the browser cannot encode WebP, files are saved as PNG.
+- "Upscaled ×N" badge on a preview (and in the focus view) when the output enlarges the source pixels in the area used, computed from the real crop / fit geometry incl. padding, zoom and 2x export
 - Padding 0–120 px, corner radius, optional "Show safe zones" overlay on 9:16 previews (top 250 / bottom 340 px)
 - Caption overlay on every format: text, top/bottom, size, color; placed inside Story safe zones automatically
 - Stage shows a grid of live previews (max 360 px each, rendered with `Studio.raf`); click one for the focus view: drag to pan, wheel/slider to zoom (1–3x), per-format fill mode override, per-format download, reset

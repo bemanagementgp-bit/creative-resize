@@ -97,7 +97,7 @@
   "Fit + blurred background": "Adatta + sfondo sfocato",
   "Fit + blurred background keeps your whole design visible, scaled to fit inside the target size, and fills the empty space with a blurred, slightly darkened copy of the same image. It is the standard trick for turning a landscape design into a Story or a vertical poster into a YouTube thumbnail without cropping anything. You control the blur radius, padding and the corner radius of the inner image.": "Adatta + sfondo sfocato mantiene visibile l'intero design, ridimensionato per stare dentro il formato di destinazione, e riempie lo spazio vuoto con una copia sfocata e leggermente scurita della stessa immagine. È il trucco classico per trasformare un design orizzontale in una Storia o un poster verticale in una miniatura YouTube senza ritagliare nulla. Controlli il raggio della sfocatura, i margini e il raggio degli angoli dell'immagine interna.",
   "Fit + color": "Adatta + colore",
-  "Fit with blurred background, fit with solid or auto color, or stretch": "Adatta con sfondo sfocato, adatta con colore unito o automatico, oppure allunga",
+  "Fit with blurred background, fit with solid or auto color, fit with transparent background, or stretch": "Adatta con sfondo sfocato, adatta con colore unito o automatico, adatta con sfondo trasparente, oppure allunga",
   "Focal point": "Punto focale",
   "Focal point. Click or drag on the thumbnail, or use the arrow keys.": "Punto focale. Fai clic o trascina sulla miniatura, oppure usa i tasti freccia.",
   "Format previews": "Anteprime dei formati",
@@ -261,5 +261,12 @@
   "Quality": "Qualità",
   "Show": "Mostra",
   "Showing the": "Stai vedendo il",
-  "Video": "Video"
+  "Video": "Video",
+  "Fit + transparent": "Adatta + trasparente",
+  "Transparent": "Trasparente",
+  "Upscaled ×{0}": "Ingrandita ×{0}",
+  "The image is enlarged for this format and may look soft. Use a larger original if you can.": "L'immagine viene ingrandita per questo formato e può risultare sfocata. Usa un originale più grande, se puoi.",
+  "Saves as PNG": "Salvato come PNG",
+  "JPG cannot store transparency, so transparent formats are saved as PNG.": "Il JPG non supporta la trasparenza, quindi i formati trasparenti vengono salvati come PNG.",
+  "This browser cannot encode WebP, so files are saved as PNG.": "Questo browser non può codificare WebP, quindi i file vengono salvati come PNG."
 }
