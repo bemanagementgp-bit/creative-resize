@@ -87,24 +87,23 @@
   function src() { return items.length ? items[current] : sampleItem; }
   function makeItem(img, name) { return { img, name, w: img.width, h: img.height, dom: dominant(img), blurCache: null }; }
 
+  // Generic sample: a neutral "photo" placeholder — no text, brands or scenes, so the tool is what people look at.
+  function paintPlaceholder(x, w, h) {
+    const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#dcdde1'); g.addColorStop(1, '#c4c6cd');
+    x.fillStyle = g; x.fillRect(0, 0, w, h);
+    const s = Math.min(w, h) * 0.34, fw = s * 1.3, fh = s, fx = (w - fw) / 2, fy = (h - fh) / 2, r = s * 0.1;
+    x.beginPath(); x.moveTo(fx + r, fy); x.arcTo(fx + fw, fy, fx + fw, fy + fh, r); x.arcTo(fx + fw, fy + fh, fx, fy + fh, r);
+    x.arcTo(fx, fy + fh, fx, fy, r); x.arcTo(fx, fy, fx + fw, fy, r); x.closePath();
+    x.strokeStyle = '#a4a7b1'; x.lineWidth = Math.max(4, s * 0.035); x.lineJoin = 'round'; x.stroke();
+    x.save(); x.clip();
+    x.fillStyle = '#b5b8c0'; x.beginPath(); x.arc(fx + fw * 0.7, fy + fh * 0.32, s * 0.11, 0, Math.PI * 2); x.fill();
+    x.fillStyle = '#a4a7b1'; x.beginPath(); x.moveTo(fx, fy + fh); x.lineTo(fx + fw * 0.34, fy + fh * 0.46); x.lineTo(fx + fw * 0.58, fy + fh * 0.76);
+    x.lineTo(fx + fw * 0.74, fy + fh * 0.6); x.lineTo(fx + fw, fy + fh * 0.88); x.lineTo(fx + fw, fy + fh); x.closePath(); x.fill();
+    x.restore();
+  }
   function makeSample() {
     const w = 1500, h = 1000, c = document.createElement('canvas'); c.width = w; c.height = h;
-    const x = c.getContext('2d');
-    const g = x.createLinearGradient(0, 0, w, h); g.addColorStop(0, '#312e81'); g.addColorStop(0.55, '#9333ea'); g.addColorStop(1, '#f97316');
-    x.fillStyle = g; x.fillRect(0, 0, w, h);
-    // shapes
-    x.fillStyle = 'rgba(255,255,255,.12)'; x.beginPath(); x.arc(1170, 330, 330, 0, Math.PI * 2); x.fill();
-    x.strokeStyle = 'rgba(255,255,255,.35)'; x.lineWidth = 6; x.beginPath(); x.arc(1170, 330, 400, 0, Math.PI * 2); x.stroke();
-    x.fillStyle = 'rgba(255,255,255,.18)'; Studio.roundRect(x, 1040, 700, 320, 180, 36); x.fill();
-    x.fillStyle = '#fde68a'; x.beginPath(); x.arc(1300, 790, 54, 0, Math.PI * 2); x.fill();
-    // text
-    x.fillStyle = '#fff'; x.textBaseline = 'alphabetic';
-    x.font = `800 72px ${FONT}`; x.fillText('SUMMER', 110, 280);
-    x.font = `800 230px ${FONT}`; x.fillText('SALE', 96, 500);
-    x.font = `500 56px ${FONT}`; x.fillStyle = 'rgba(255,255,255,.88)'; x.fillText('Up to 50% off everything', 110, 600);
-    x.fillStyle = '#fff'; Studio.roundRect(x, 110, 660, 300, 72, 36); x.fill();
-    x.fillStyle = '#4c1d95'; x.font = `700 32px ${FONT}`; x.fillText('July 1 – 14', 164, 707);
-    x.fillStyle = 'rgba(255,255,255,.7)'; x.font = `600 30px ${FONT}`; x.fillText('yourbrand.com', 110, 920);
+    paintPlaceholder(c.getContext('2d'), w, h);
     return c;
   }
   function dominant(img) {
@@ -599,7 +598,7 @@
     $('stage').classList.toggle('has-image', has);
     $('srcInfo').innerHTML = has
       ? `<b>${esc(it.name)}</b> · ${it.w} × ${it.h} px${items.length > 1 ? ' · ' + items.length + ' images loaded' : ''}`
-      : 'Showing the <b>built-in sample poster</b>. Drop, paste or upload your own design to replace it.';
+      : 'Showing the <b>built-in sample image</b>. Drop, paste or upload your own design to replace it.';
     const list = $('srcList'); list.innerHTML = '';
     if (items.length > 1) items.forEach((x, i) => {
       const b = document.createElement('button'); b.type = 'button'; b.className = i === current ? 'active' : ''; b.title = x.name; b.setAttribute('aria-label', 'Show ' + x.name);
@@ -614,7 +613,7 @@
 
   // ---------- init ----------
   function init() {
-    sampleItem = makeItem(makeSample(), 'sample-poster');
+    sampleItem = makeItem(makeSample(), 'sample');
     document.querySelectorAll('[data-pro-price]').forEach(el => el.textContent = C.PRO_PRICE || '$9');
     const pp = $('proPrice'); if (pp) pp.textContent = C.PRO_PRICE || '$9';
 
@@ -683,7 +682,7 @@
     document.addEventListener('pro:changed', refreshPro);
 
     syncAll(); syncSource(); syncGrid(); refreshPro();
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { sampleItem = makeItem(makeSample(), 'sample-poster'); if (!items.length) { syncSource(); } update(); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { sampleItem = makeItem(makeSample(), 'sample'); if (!items.length) { syncSource(); } update(); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
